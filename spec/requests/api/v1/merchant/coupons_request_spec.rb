@@ -62,6 +62,44 @@ RSpec.describe "Coupons", type: :request do
         expect(coupon[:attributes][:merchant_id]).to be_an(Integer)
       end
     end
+
+      it 'returns all coupons sorted by their active key if its active' do 
+        merchant = Merchant.create!(id: 1, name: "Sample Merchant")
+        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, merchant_id: merchant.id)
+
+        get "/api/v1/merchants/#{merchant.id}/coupons?sort_by=active"
+
+        expect(response).to be_successful
+        active_coupon = JSON.parse(response.body, symbolize_names: true)
+        
+        expect(active_coupon[:data].first[:id].to_i).to be_an(Integer)
+        expect(active_coupon[:data].first[:type]).to eq('coupon')
+        expect(active_coupon[:data].first[:attributes][:name]).to eq("Buy One Get One 50")
+        expect(active_coupon[:data].first[:attributes][:code]).to eq("BOGO50")
+        expect(active_coupon[:data].first[:attributes][:discount_value]).to be_a(String)
+        expect(active_coupon[:data].first[:attributes][:active]).to eq(true)
+        expect(active_coupon[:data].first[:attributes][:merchant_id]).to eq(merchant.id)
+      end
+
+      it 'returns all coupons sorted by their active key if its inactive' do
+        merchant = Merchant.create!(id: 1, name: "Sample Merchant")
+        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, merchant_id: merchant.id)
+
+        get "/api/v1/merchants/#{merchant.id}/coupons?sort_by=inactive"
+
+        expect(response).to be_successful
+        active_coupon = JSON.parse(response.body, symbolize_names: true)
+        
+        expect(active_coupon[:data].first[:id].to_i).to be_an(Integer)
+        expect(active_coupon[:data].first[:type]).to eq('coupon')
+        expect(active_coupon[:data].first[:attributes][:name]).to eq("Buy One Get One 20")
+        expect(active_coupon[:data].first[:attributes][:code]).to eq("BOGO20")
+        expect(active_coupon[:data].first[:attributes][:discount_value]).to be_a(String)
+        expect(active_coupon[:data].first[:attributes][:active]).to eq(false)
+        expect(active_coupon[:data].first[:attributes][:merchant_id]).to eq(merchant.id)
+      end
   
       it 'returns an error is there is no merchant with that id' do 
         merchant = Merchant.create!(id: 1, name: "Sample Merchant")
