@@ -8,4 +8,5 @@ class Api::V1::Merchants::InvoicesController < ApplicationController
     end
     render json: InvoiceSerializer.new(invoices)
   end
+
 end
