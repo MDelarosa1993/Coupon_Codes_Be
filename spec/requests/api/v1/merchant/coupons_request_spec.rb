@@ -204,5 +204,19 @@ RSpec.describe "Coupons", type: :request do
         expect(updated_coupon[:data][:attributes]).to have_key(:merchant_id)
         expect(updated_coupon[:data][:attributes][:merchant_id]).to be_an(Integer)
       end
+      it 'does not allow deactivation if there are pending invoices' do
+        merchant = Merchant.create!(name: "Sample Merchant")
+        coupon = Coupon.create!(name: "Seasonal Discount", code: "SEASONAL", discount_value: 20, active: true, discount_type: 'percent', merchant: merchant)
+        
+        customer = Customer.create!(first_name: "Mel", last_name: "Rose")
+        Invoice.create!(merchant: merchant, customer: customer, coupon: coupon, status: "pending")
+        
+        patch "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}", params: { coupon: { active: false } }
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+        error_message = JSON.parse(response.body, symbolize_names: true)
+        
+        expect(error_message[:errors][:base]).to include("Cannot deactivate coupon with pending invoices.")
+      end
     end
 end

@@ -7,6 +7,7 @@ class Coupon < ApplicationRecord
   validates :discount_value, presence: true, numericality: { greater_than: 0 }
   validates :discount_type, inclusion: { in: ['dollar', 'percent'], message: "%{value} is not a valid discount type" }
   validate :max_coupons, on: :create
+  validate :pending_invoices, on: :update
 
   def self.sorted_by_active(merchant, status)
     if status == 'active'
@@ -21,6 +22,12 @@ class Coupon < ApplicationRecord
   def max_coupons
     if merchant && merchant.coupons.where(active: true).count >= 5
       errors.add(:base, "This Merchant already has 5 active coupons.")
+    end
+  end
+
+  def pending_invoices
+    if !active? && invoices.where(status: 'pending').exists?
+      errors.add(:base, "Cannot deactivate coupon with pending invoices.")
     end
   end
 end
