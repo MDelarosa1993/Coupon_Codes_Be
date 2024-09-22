@@ -135,6 +135,43 @@ RSpec.describe "Coupons", type: :request do
         expect(created_coupon.active).to be_truthy
         expect(created_coupon.merchant_id).to eq(merchant.id)
       end
+
+      it 'returns an error if merchant already has 5 active coupons' do 
+        merchant = Merchant.create!(name: "Sample Merchant")
+        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 40", code: "BOGO40", discount_value: 40, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 30", code: "BOGO30", discount_value: 30, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 10", code: "BOGO10", discount_value: 10, active: true, discount_type: 'percent', merchant_id: merchant.id)
+
+        new_coupon_params = { name: "Extra Coupon", code: "EXTRA", discount_value: 15, discount_type: 'percent', active: true }
+
+        post "/api/v1/merchants/#{merchant.id}/coupons", params: { coupon: new_coupon_params }
+        
+        expect(response).to have_http_status(422)
+
+        error_message = JSON.parse(response.body, symbolize_names: true)
+        
+
+        expect(error_message[:message]).to eq("Your query could not be completed")
+        expect(error_message[:errors]).to include("Validation failed: This Merchant already has 5 active coupons.")
+      end
+
+      it 'fails validation if coupon code entered is not unique' do
+        merchant = Merchant.create!(name: "Sample Merchant")
+        Coupon.create!(name: "Existing Coupon", code: "UNIQUECODE", discount_value: 10, discount_type: 'percent', active: true, merchant: merchant)
+      
+        new_coupon_params = { name: "Duplicate Coupon", code: "UNIQUECODE", discount_value: 15, discount_type: 'percent', active: true }
+      
+        post "/api/v1/merchants/#{merchant.id}/coupons", params: { coupon: new_coupon_params }
+      
+        expect(response).to have_http_status(422)
+      
+        error_message = JSON.parse(response.body, symbolize_names: true)
+      
+        expect(error_message[:message]).to eq("Your query could not be completed")
+        expect(error_message[:errors]).to include("Validation failed: Code has already been taken")
+      end
     end
 
     describe 'PATCH' do 
