@@ -4,7 +4,7 @@ RSpec.describe "Coupons", type: :request do
   describe "GET /show" do
     it 'return one coupon by id' do 
       merchant = Merchant.create!(id: 1, name: "Sample Merchant")
-      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
+      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
 
       get "/api/v1/merchants/#{merchant.id}/coupons/#{coupon.id}"
 
@@ -38,10 +38,10 @@ RSpec.describe "Coupons", type: :request do
   describe 'GET/index' do
     it 'returns all coupons for certain merchant id' do 
       merchant = Merchant.create!(id: 1, name: "Sample Merchant")
-      Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
-      Coupon.create!(name: "Buy One Get One 40", code: "BOGO40", discount_value: 40, active: true, merchant_id: merchant.id)
-      Coupon.create!(name: "Buy One Get One 30", code: "BOGO30", discount_value: 30, active: false, merchant_id: merchant.id)
-      Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, merchant_id: merchant.id)
+      Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
+      Coupon.create!(name: "Buy One Get One 40", code: "BOGO40", discount_value: 40, active: true, discount_type: 'percent', merchant_id: merchant.id)
+      Coupon.create!(name: "Buy One Get One 30", code: "BOGO30", discount_value: 30, active: false, discount_type: 'percent', merchant_id: merchant.id)
+      Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, discount_type: 'percent', merchant_id: merchant.id)
 
       get "/api/v1/merchants/#{merchant.id}/coupons"
 
@@ -65,8 +65,8 @@ RSpec.describe "Coupons", type: :request do
 
       it 'returns all coupons sorted by their active key if its active' do 
         merchant = Merchant.create!(id: 1, name: "Sample Merchant")
-        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
-        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, discount_type: 'percent', merchant_id: merchant.id)
 
         get "/api/v1/merchants/#{merchant.id}/coupons?sort_by=active"
 
@@ -84,8 +84,8 @@ RSpec.describe "Coupons", type: :request do
 
       it 'returns all coupons sorted by their active key if its inactive' do
         merchant = Merchant.create!(id: 1, name: "Sample Merchant")
-        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
-        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, discount_type: 'dollar', active: true, merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, discount_type: 'percent', merchant_id: merchant.id)
 
         get "/api/v1/merchants/#{merchant.id}/coupons?sort_by=inactive"
 
@@ -103,10 +103,10 @@ RSpec.describe "Coupons", type: :request do
   
       it 'returns an error is there is no merchant with that id' do 
         merchant = Merchant.create!(id: 1, name: "Sample Merchant")
-        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
-        Coupon.create!(name: "Buy One Get One 40", code: "BOGO40", discount_value: 40, active: true, merchant_id: merchant.id)
-        Coupon.create!(name: "Buy One Get One 30", code: "BOGO30", discount_value: 30, active: false, merchant_id: merchant.id)
-        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 40", code: "BOGO40", discount_value: 40, active: true, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 30", code: "BOGO30", discount_value: 30, active: false, discount_type: 'percent', merchant_id: merchant.id)
+        Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: false, discount_type: 'percent', merchant_id: merchant.id)
 
         get "/api/v1/merchants/9999/coupons"
         
@@ -122,7 +122,7 @@ RSpec.describe "Coupons", type: :request do
     describe 'POST' do 
       it 'creates a new coupon' do 
         merchant = Merchant.create!(name: "Sample Merchant")
-        coupon_params = { name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true }
+        coupon_params = { name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, discount_type: 'percent', active: true }
 
         post "/api/v1/merchants/#{merchant.id}/coupons", params: { coupon: coupon_params }
 
@@ -140,7 +140,7 @@ RSpec.describe "Coupons", type: :request do
     describe 'PATCH' do 
       it 'updates a coupon from active to inactive' do 
         merchant = Merchant.create!(name: "Sample Merchant")
-        coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
+        coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
         coupon_params = { name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: false, merchant_id: merchant.id}
 
         patch "/api/v1/merchants/#{merchant.id}/coupons//#{coupon.id}", params: { coupon: coupon_params }

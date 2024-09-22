@@ -30,6 +30,6 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   private
 
   def coupon_params
-    params.require(:coupon).permit(:name, :code, :discount_value, :active)
+    params.require(:coupon).permit(:name, :code, :discount_value, :active, :discount_type)
   end
 end

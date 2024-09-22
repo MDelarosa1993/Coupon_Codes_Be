@@ -91,7 +91,7 @@ describe Merchant, type: :model do
 
     it 'returns the count total number of coupons associated with a merchant' do 
       merchant = Merchant.create!(name: "Sample Merchant")
-      Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant: merchant)
+      Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant: merchant)
       
       expect(merchant.coupons_count).to eq(1)
     end
@@ -100,7 +100,7 @@ describe Merchant, type: :model do
       merchant = Merchant.create!(name: "Sample Merchant")
       customer_1 = Customer.create!(first_name: "Mel", last_name: "Rose")
       customer_2 = Customer.create!(first_name: "Saul", last_name: "Rose")
-      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant: merchant)
+      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant: merchant)
       Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
       Invoice.create!(merchant: merchant, customer: customer_2, coupon: nil, status: "returned")
       Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")

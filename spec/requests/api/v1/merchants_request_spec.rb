@@ -27,7 +27,7 @@ describe "Merchant endpoints", :type => :request do
       merchant = Merchant.create!(name: "Sample Merchant")
       customer_1 = Customer.create!(first_name: "Mel", last_name: "Rose")
       customer_2 = Customer.create!(first_name: "Saul", last_name: "Rose")
-      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant: merchant)
+      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant: merchant)
       Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
       Invoice.create!(merchant: merchant, customer: customer_2, coupon: nil, status: "returned")
       Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")

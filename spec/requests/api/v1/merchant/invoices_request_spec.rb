@@ -61,7 +61,7 @@ RSpec.describe "Merchant invoices endpoints" do
     merchant = Merchant.create!(id: 1, name: "Sample Merchant")
     customer_1 = Customer.create!(first_name: "Mel", last_name: "Rose")
     customer_2 = Customer.create!(first_name: "Saul", last_name: "Rose")
-    coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant_id: merchant.id)
+    coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
     Invoice.create!(merchant_id: 1, customer_id: customer_1.id, coupon_id: coupon.id, status: "shipped")
     Invoice.create!(merchant_id: 1, customer_id: customer_2.id, coupon_id: nil, status: "returned")
     Invoice.create!(merchant_id: 1, customer_id: customer_1.id, coupon_id: coupon.id, status: "shipped")
