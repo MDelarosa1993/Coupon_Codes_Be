@@ -17,7 +17,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
     if coupon.save 
       render json: CouponSerializer.new(coupon), status: :created 
     else
-      render json: { errors: coupon.errors.full_messages }, status: :unprocessable_entity 
+      render json: ErrorSerializer.serialize(coupon.errors), status: :unprocessable_entity 
     end
   end
 

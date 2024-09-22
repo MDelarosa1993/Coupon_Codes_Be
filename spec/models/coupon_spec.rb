@@ -42,4 +42,19 @@ RSpec.describe Coupon, type: :model do
       expect(expected.count).to eq(2) 
     end
   end
+
+  describe '#instance_methods' do 
+    it 'raises an error if more than 5 coupons are active for a merchant' do
+      merchant = Merchant.create!(name: "Sample Merchant")
+      Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant: merchant)
+      Coupon.create!(name: "Buy One Get One 40", code: "BOGO40", discount_value: 40, active: true, discount_type: 'percent', merchant: merchant)
+      Coupon.create!(name: "Buy One Get One 30", code: "BOGO30", discount_value: 30, active: true, discount_type: 'percent', merchant: merchant)
+      Coupon.create!(name: "Buy One Get One 20", code: "BOGO20", discount_value: 20, active: true, discount_type: 'percent', merchant: merchant)
+      Coupon.create!(name: "Buy One Get One 10", code: "BOGO10", discount_value: 10, active: true, discount_type: 'percent', merchant: merchant)    
+      new_coupon = Coupon.new(name: "Buy One Get One 60", code: "BOGO60", discount_value: 10, active: true, discount_type: 'percent', merchant: merchant) 
+
+      expect(new_coupon.valid?).to be_falsy
+      expect(new_coupon.errors[:base]).to include("This Merchant already has 5 active coupons.")
+    end
+  end
 end
