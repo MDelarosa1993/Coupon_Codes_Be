@@ -23,6 +23,29 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data]).to be_empty
     end
 
+    it 'returns count of coupons for each merchant and a count of invoices with coupons applied for each merchant' do 
+      merchant = Merchant.create!(name: "Sample Merchant")
+      customer_1 = Customer.create!(first_name: "Mel", last_name: "Rose")
+      customer_2 = Customer.create!(first_name: "Saul", last_name: "Rose")
+      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant: merchant)
+      Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
+      Invoice.create!(merchant: merchant, customer: customer_2, coupon: nil, status: "returned")
+      Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
+      Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
+
+
+      get "/api/v1/merchants"
+
+      expect(response).to be_successful
+
+      json = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(json[:data].first[:attributes]).to include(:coupons_count, :invoice_coupon_count)
+      expect(json[:data].first[:attributes][:coupons_count]).to eq(1)  
+      expect(json[:data].first[:attributes][:invoice_coupon_count]).to eq(3) 
+    end
+
     it "should return merchants sorted newest to oldest when sent sort param" do
       middle = Merchant.create!(name: "old merchant")
       first = Merchant.create!(name: "newer merchant")
