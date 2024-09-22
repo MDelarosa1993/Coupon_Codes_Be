@@ -88,5 +88,27 @@ describe Merchant, type: :model do
       expect(merchant.invoices_filtered_by_status("returned")).to eq([inv_5_returned])
       expect(other_merchant.invoices_filtered_by_status("packaged")).to eq([inv_4_packaged])
     end
+
+    it 'returns the count total number of coupons associated with a merchant' do 
+      merchant = Merchant.create!(name: "Sample Merchant")
+      Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant: merchant)
+      
+      expect(merchant.coupons_count).to eq(1)
+    end
+
+    it 'returns the count of invoices asssociated with a merchant that a coupon was applied' do 
+      merchant = Merchant.create!(name: "Sample Merchant")
+      customer_1 = Customer.create!(first_name: "Mel", last_name: "Rose")
+      customer_2 = Customer.create!(first_name: "Saul", last_name: "Rose")
+      coupon = Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, merchant: merchant)
+      Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
+      Invoice.create!(merchant: merchant, customer: customer_2, coupon: nil, status: "returned")
+      Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
+      Invoice.create!(merchant: merchant, customer: customer_1, coupon: coupon, status: "shipped")
+
+      count = merchant.invoice_coupon_count
+
+      expect(count).to eq(3)
+    end
   end
 end
