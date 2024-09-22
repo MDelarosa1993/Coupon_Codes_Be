@@ -5,7 +5,7 @@ class Coupon < ApplicationRecord
   validates :name, :code, presence: true
   validates :active, inclusion: { in: [true, false] }
   validates :discount_value, presence: true, numericality: { greater_than: 0 }
-  validates :discount_type, inclusion: { in: ['dollar', 'percent'], message: "%{value} is not a valid discount type" }
+  validates :discount_type, inclusion: { in: ['dollar', 'percent'] }
   validate :max_coupons, on: :create
   validate :pending_invoices, on: :update
 
