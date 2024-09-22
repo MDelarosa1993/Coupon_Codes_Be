@@ -5,5 +5,5 @@ class Invoice < ApplicationRecord
   has_many :invoice_items, dependent: :destroy
   has_many :transactions, dependent: :destroy
 
-  validates :status, inclusion: { in: ["shipped", "packaged", "returned"] }
+  validates :status, inclusion: { in: ["shipped", "packaged", "returned", "pending"] }
 end

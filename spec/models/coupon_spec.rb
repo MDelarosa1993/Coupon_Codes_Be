@@ -56,5 +56,17 @@ RSpec.describe Coupon, type: :model do
       expect(new_coupon.valid?).to be_falsy
       expect(new_coupon.errors[:base]).to include("This Merchant already has 5 active coupons.")
     end
+
+    it 'does not allow deactivation if there are pending invoices' do
+      merchant = Merchant.create!(name: "Test Merchant")
+      coupon = Coupon.create!(name: "Seasonal Discount", code: "SEASONAL", discount_value: 20, active: true, discount_type: 'percent', merchant: merchant)
+      customer = Customer.create!(first_name: "Mel", last_name: "Rose")
+      Invoice.create!(merchant: merchant, customer: customer, coupon: coupon, status: "pending")
+  
+      coupon.active = false
+      coupon.pending_invoices
+  
+      expect(coupon.errors[:base]).to include("Cannot deactivate coupon with pending invoices.")
+    end
   end
 end

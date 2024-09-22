@@ -23,9 +23,14 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def update 
     coupon = Coupon.find(params[:id])
-    coupon.update(coupon_params)
-    render json: CouponSerializer.new(coupon)
+  
+    if coupon.update(coupon_params)
+      render json: CouponSerializer.new(coupon)
+    else
+      render json: ErrorSerializer.format_errors(coupon.errors), status: :unprocessable_entity
+    end
   end
+  
 
   private
 
