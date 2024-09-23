@@ -68,5 +68,26 @@ RSpec.describe Coupon, type: :model do
   
       expect(coupon.errors[:base]).to include("Cannot deactivate coupon with pending invoices.")
     end
+
+    it 'returns true when all items belong to the same merchant' do 
+      merchant = Merchant.create!(name: "Test Merchant")
+      coupon = Coupon.create!(name: "Seasonal Discount", code: "SEASONAL", discount_value: 20, active: true, discount_type: 'percent', merchant: merchant)
+      item_1 = Item.create!(name: 'Item A', description: 'Description for Item A', unit_price: 100, merchant: merchant)
+      item_2 = Item.create!(name: 'Item B', description: 'Description for Item B', unit_price: 200, merchant: merchant)
+
+      items = [item_1, item_2] 
+      expect(coupon.applicable_to?(items)).to be(true)
+    end
+
+    it 'returns false when some items do not belong to the same merchant' do
+      merchant_a = Merchant.create!(name: "Merchant A")
+      merchant_b = Merchant.create!(name: "Merchant B")
+      coupon = Coupon.create!(name: "Seasonal Discount", code: "SEASONAL", discount_value: 20, active: true, discount_type: 'percent', merchant: merchant_a)
+      item_1 = Item.create!(name: 'Item A', description: 'Description for Item A', unit_price: 100, merchant: merchant_a)
+      item_2 = Item.create!(name: 'Item B', description: 'Description for Item B', unit_price: 200, merchant: merchant_b)
+
+      items = [item_1, item_2] 
+      expect(coupon.applicable_to?(items)).to be(false)
+    end
   end
 end
