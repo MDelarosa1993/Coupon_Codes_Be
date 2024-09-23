@@ -30,4 +30,8 @@ class Coupon < ApplicationRecord
       errors.add(:base, "Cannot deactivate coupon with pending invoices.")
     end
   end
+
+  def applicable_to?(items)
+    items.all? { |item| item.merchant_id == self.merchant_id }
+  end
 end
