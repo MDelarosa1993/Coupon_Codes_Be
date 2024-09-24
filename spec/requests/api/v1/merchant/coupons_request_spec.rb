@@ -125,7 +125,7 @@ RSpec.describe "Coupons", type: :request do
         coupon_params = { name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, discount_type: 'percent', active: true }
 
         post "/api/v1/merchants/#{merchant.id}/coupons", params: { coupon: coupon_params }
-
+        
         expect(response).to have_http_status(201)
 
         created_coupon = Coupon.last
