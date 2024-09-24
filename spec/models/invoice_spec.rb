@@ -74,4 +74,57 @@ RSpec.describe Invoice do
   
     expect(total).to eq(150)  
   end
+
+  it 'calculates total correctly without any discounts' do
+    merchant = Merchant.create!(name: "Test Merchant")
+    customer = Customer.create!(first_name: "Mel", last_name: "Rosa")
+    item_1 = Item.create!(name: 'Item A', description: 'Description for Item A', unit_price: 100, merchant: merchant)
+    item_2 = Item.create!(name: 'Item B', description: 'Description for Item B', unit_price: 50, merchant: merchant)
+    invoice = Invoice.create!(customer_id: customer.id, merchant_id: merchant.id, status: 'shipped')
+    InvoiceItem.create!(invoice: invoice, item: item_1, quantity: 2) 
+    InvoiceItem.create!(invoice: invoice, item: item_2, quantity: 3) 
+    total = invoice.calculate_total(merchant.id)
+    expected_total = (2 * 100) + (3 * 50)
+    expect(total).to eq(expected_total)
+  end
+
+  it 'applies dollar discount correctly' do
+    merchant = Merchant.create!(name: "Test Merchant")
+    coupon = Coupon.create!(name: "hi", code: 'jsdf', merchant: merchant, discount_type: 'dollar', discount_value: 20, active: true)
+    customer = Customer.create!(first_name: "Mel", last_name: "Rosa")
+    item_1 = Item.create!(name: 'Item A', description: 'Description for Item A', unit_price: 100, merchant: merchant)
+    item_2 = Item.create!(name: 'Item B', description: 'Description for Item B', unit_price: 50, merchant: merchant)
+    invoice = Invoice.create!(customer_id: customer.id, merchant_id: merchant.id, status: 'shipped', coupon: coupon)
+    InvoiceItem.create!(invoice: invoice, item: item_1, quantity: 2) # 2 * 100 = 200
+    InvoiceItem.create!(invoice: invoice, item: item_2, quantity: 3) # 3 * 50 = 150
+    total = invoice.calculate_total(merchant.id)
+    discounted_total = invoice.apply_discount(total, merchant.id)
+    expected_total = total - coupon.discount_value 
+    expect(discounted_total).to eq(expected_total)
+  end
+
+  it 'returns original total if coupon does not belong to the merchant' do
+    merchant = Merchant.create!(name: "Test Merchant")
+    other_merchant = Merchant.create!(name: "Other Merchant")
+    coupon = Coupon.create!(name: "hi", code: 'jsdf', merchant: other_merchant, discount_type: 'dollar', discount_value: 20, active: true)
+  
+    customer = Customer.create!(first_name: "Mel", last_name: "Rosa")
+    item_1 = Item.create!(name: 'Item A', description: 'Description for Item A', unit_price: 100, merchant: merchant)
+    item_2 = Item.create!(name: 'Item B', description: 'Description for Item B', unit_price: 50, merchant: merchant)
+    invoice = Invoice.create!(customer_id: customer.id, merchant_id: merchant.id, status: 'shipped', coupon: coupon)
+    InvoiceItem.create!(invoice: invoice, item: item_1, quantity: 2)
+    InvoiceItem.create!(invoice: invoice, item: item_2, quantity: 3)
+    total = invoice.calculate_total(merchant.id)
+    discounted_total = invoice.apply_discount(total, merchant.id)
+    expect(discounted_total).to eq(total)
+  end
+
+  it 'returns 0 if total is 0 or less' do
+    merchant = Merchant.create!(name: "Test Merchant")
+    customer = Customer.create!(first_name: "Mel", last_name: "Rosa")
+    coupon = Coupon.create!(name: "hi", code: 'jsdf', merchant: merchant, discount_type: 'dollar', discount_value: 20, active: true)
+    invoice = Invoice.create!(customer_id: customer.id, merchant_id: merchant.id, status: 'shipped', coupon: coupon)
+    expect(invoice.apply_discount(0, merchant.id)).to eq(0)
+    expect(invoice.apply_discount(-10, merchant.id)).to eq(0)
+  end
 end

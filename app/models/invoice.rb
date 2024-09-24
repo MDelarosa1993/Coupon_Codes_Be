@@ -12,8 +12,6 @@ class Invoice < ApplicationRecord
     apply_discount(total, merchant_id)
   end
 
-  private
-
   def calculate_total(merchant_id)
     total = 0
     invoice_items.includes(:item).each do |invoice_item|
