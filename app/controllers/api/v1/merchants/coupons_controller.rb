@@ -2,8 +2,9 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def show 
     coupon = Coupon.find(params[:id])
-    render json: CouponSerializer.new(coupon)
+    render json: CouponSerializer.new(coupon, {single_coupon: true})
   end
+  
 
   def index
     merchant = Merchant.find(params[:merchant_id])
@@ -13,22 +14,14 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def create
     merchant = Merchant.find(params[:merchant_id])
-    coupon = merchant.coupons.create!(coupon_params)
-    if coupon.save 
-      render json: CouponSerializer.new(coupon), status: :created 
-    else
-      render json: ErrorSerializer.serialize(coupon.errors), status: :unprocessable_entity 
-    end
+    coupon = merchant.coupons.create!(coupon_params) # This will raise an error if invalid
+    render json: CouponSerializer.new(coupon), status: :created
   end
 
-  def update 
+  def update
     coupon = Coupon.find(params[:id])
-  
-    if coupon.update(coupon_params)
-      render json: CouponSerializer.new(coupon)
-    else
-      render json: ErrorSerializer.format_errors(coupon.errors), status: :unprocessable_entity
-    end
+    coupon.update!(coupon_params) # This will raise an error if invalid
+    render json: CouponSerializer.new(coupon)
   end
   
 

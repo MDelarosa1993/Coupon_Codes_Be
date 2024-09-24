@@ -136,6 +136,20 @@ RSpec.describe "Coupons", type: :request do
         expect(created_coupon.merchant_id).to eq(merchant.id)
       end
 
+      it 'fails to create new coupon' do
+        merchant = Merchant.create!(name: "Sample Merchant")
+        invalid_coupon_params = { name: "", code: "", discount_value: -10, discount_type: 'percent', active: true } # Invalid values
+      
+        post "/api/v1/merchants/#{merchant.id}/coupons", params: { coupon: invalid_coupon_params }
+      
+        expect(response).to have_http_status(:unprocessable_entity)
+      
+        expect(Coupon.count).to eq(0)
+      
+        error_response = JSON.parse(response.body)
+        expect(error_response).to include('errors')
+      end
+
       it 'returns an error if merchant already has 5 active coupons' do 
         merchant = Merchant.create!(name: "Sample Merchant")
         Coupon.create!(name: "Buy One Get One 50", code: "BOGO50", discount_value: 50, active: true, discount_type: 'percent', merchant_id: merchant.id)
@@ -216,7 +230,8 @@ RSpec.describe "Coupons", type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
         error_message = JSON.parse(response.body, symbolize_names: true)
         
-        expect(error_message[:errors][:base]).to include("Cannot deactivate coupon with pending invoices.")
+        expect(error_message[:message]).to include("Your query could not be completed")
+        expect(error_message[:errors]).to include("Validation failed: Cannot deactivate coupon with pending invoices.")
       end
     end
 end
